@@ -27,4 +27,4 @@ diabetes <- diabetes[ ,-1:-2]
 
 ####### CodeBook for factor levels "https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf"
 
-
+diabetes_e <- diabetes %>% filter(Education == "elementary")
