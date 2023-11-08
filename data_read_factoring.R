@@ -2,14 +2,11 @@ library(tidyverse)
 diabetes <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 str(diabetes)
 
-### BMI split into three levels: IQR - ave, < IOR - low, > IQR - high and MentHlth & PhysHlth converted to binary
-diabetes <- diabetes %>% mutate(bmi = if_else(BMI < 24, "low", 
-                                              if_else(BMI < 31, "ave", "high"))) %>%
+### MentHlth & PhysHlth converted to binary
+diabetes <- diabetes %>% 
   mutate(m_hlth = if_else(MentHlth == 0, 0, 1)) %>%
   mutate(p_hlth = if_else(PhysHlth == 0, 0, 1)) %>%
 ### create factors
-  mutate(bmi = factor(bmi)) %>%
-  mutate(bmi = recode(bmi, "low" = "low", "ave" = "ave", "high" = "high")) %>%
   mutate(GenHlth = factor(GenHlth)) %>%
   mutate(GenHlth = recode(GenHlth, "1" = "excellent", "2" = "very_good", "3" = "good", "4" = "fair", "5" = "poor")) %>%
   mutate(Sex = factor(Sex)) %>%
@@ -23,9 +20,10 @@ diabetes <- diabetes %>% mutate(bmi = if_else(BMI < 24, "low",
   mutate(Income = recode(Income, "1" = "<10k", "2" = "<15k", "3" = "<20k", "4" = "<25k", "5" = "<35k", "6" = "<50k", "7" = "<75k", "8" = ">75k")) %>%
   mutate(Smoker = factor(Smoker)) %>%
   mutate(Smoker = recode(Smoker, "0" = "no", "1" = "yes")) %>%
-  select(BMI, MentHlth, PhysHlth, everything())
+  select(MentHlth, PhysHlth, everything())
 
-diabetes <- diabetes[ ,-1:-3]
+### drop BMI, MentHlth, PhysHlth (original columns)
+diabetes <- diabetes[ ,-1:-2]
 
 ####### CodeBook for factor levels "https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf"
 
