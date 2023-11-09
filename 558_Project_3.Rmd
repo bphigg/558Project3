@@ -26,3 +26,8 @@ LogLoss can be a better way of measuring the performance as compared to an Accur
 ## Logistic Regression
 
 Logistic Regression is a Generalized Linear Model that models the probability of a binary outcome (success or failure, 1 or 0, etc). A Simple Linear Regression model would produce a continuous response on the real line that would not correspond to the predictions we are trying to make, so we use a logistic function that produces a logit or log-odds of success that is linear in its parameters. The logit or log-odds is then used to determine the outcome, generally split at probability 0.5 (greater than 0.5 = success, less than 0.5 = failure).
+
+## Random Forest
+
+Random Forest utilizes bootstrap aggregation to calculate the average response over many fitted trees. Whereas a Classification and Bagged Tree model will use all predictors in modeling, Random Forest will use a random subset of predictors for each bootstrap sample. By randomly selecting a subset of predictors, a good predictor or two will not dominate the tree fits and thus the variance from aggregation will not be reduced, resulting in a more robust model.
+

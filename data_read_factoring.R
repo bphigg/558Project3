@@ -1,11 +1,14 @@
 library(tidyverse)
 data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
-elementary <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Education == 3, 2, if_else(Education == 4, 3, if_else(Education == 5, 4, 5))))) %>%
+diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Education == 3, 2, if_else(Education == 4, 3, if_else(Education == 5, 4, 5))))) %>%
   mutate(Education = factor(Education)) %>%
-  mutate(Education = recode(Education, "1" = "elementary", "2" = "some_HS", "3" = "HS_grad", "4" = "some_college", "5" = "college_grad")) %>% filter(Education == "elementary") %>% select(-Education)
+  mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
+# This is where automation will select the correct subset
+  filter(Education == "Elementary") %>% 
+  select(-Education)
 
 ### MentHlth & PhysHlth converted to binary
-elementary <- elementary %>% 
+diabetes <- diabetes %>% 
   mutate(m_hlth = if_else(MentHlth == 0, 0, 1)) %>%
   mutate(p_hlth = if_else(PhysHlth == 0, 0, 1)) %>%
 ### create factors
