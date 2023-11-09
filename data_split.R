@@ -1,9 +1,17 @@
 library(caret)
 
 
-#### Diabetes factor for modeling
-diabetes_e$Diabetes_binary <- if_else(diabetes_e$Diabetes_binary == 0, "negative", "positive")
-diabetes_e$Diabetes_binary <- as.factor(diabetes_e$Diabetes_binary)
+#### onehot encode
+head(elementary)
+#define one-hot encoding function
+dummy <- dummyVars(" ~ .", data=elementary)
+#perform one-hot encoding on data frame
+elementary <- data.frame(predict(dummy, newdata=elementary))
+#view final data frame
+str(elementary)
+
+elementary$Diabetes_binary <- if_else(elementary$Diabetes_binary == 0, "negative", "positive")
+elementary$Diabetes_binary <- as.factor(elementary$Diabetes_binary)
 
 ### Data Split
 set.seed(21)
