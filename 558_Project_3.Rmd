@@ -31,3 +31,9 @@ Logistic Regression is a Generalized Linear Model that models the probability of
 
 Random Forest utilizes bootstrap aggregation to calculate the average response over many fitted trees. Whereas a Classification and Bagged Tree model will use all predictors in modeling, Random Forest will use a random subset of predictors for each bootstrap sample. By randomly selecting a subset of predictors, a good predictor or two will not dominate the tree fits and thus the variance from aggregation will not be reduced, resulting in a more robust model.
 
+## Linear Discriminant Analysis
+
+Linear Discriminant Analysis identifies the most discriminitive features of the dataset to enhance classification accuracy. It projects the data onto a lower dimensional space (dimensionality reduction) and finds a linear combination of variables that best separates the classes in the dataset. One of it's advantages is that it can handle multicollineartity within the data. However, a few disadvantages are that it assumes a normal distribution and that the data is linearly separable - both of which may not always be the case.
+
+
+

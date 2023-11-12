@@ -19,3 +19,6 @@ logreg_fit3 <- train(Diabetes_binary ~ BMI + Age + Income + BMI:Age + BMI:Income
                      preProcess=c("center", "scale"),
                      trControl = trainControl(method="cv", number = 5, 
                                               classProbs=TRUE, summaryFunction=mnLogLoss))
+
+logreg_pred <- predict(logreg_fit1, newdata = diabetesTest)
+confusionMatrix(logreg_pred, diabetesTest$Diabetes_binary)
