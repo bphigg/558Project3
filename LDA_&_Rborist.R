@@ -12,7 +12,7 @@ lda_fit$results
 lda_fit$bestTune
 
 lda_pred <- predict(lda_fit, newdata = diabetesTest)
-confusionMatrix(lda_pred, diabetesTest$Diabetes_binary)
+ax <- confusionMatrix(lda_pred, diabetesTest$Diabetes_binary)
 
 
 ### Rborist
