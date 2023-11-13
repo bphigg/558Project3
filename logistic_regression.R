@@ -22,3 +22,7 @@ logreg_fit3 <- train(Diabetes_binary ~ BMI + Age + Income + BMI:Age + BMI:Income
 
 logreg_pred <- predict(logreg_fit1, newdata = diabetesTest)
 confusionMatrix(logreg_pred, diabetesTest$Diabetes_binary)
+
+logreg_fit1$results
+logreg_fit2$results
+logreg_fit3$results
