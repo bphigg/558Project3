@@ -26,9 +26,9 @@ best_model <- function(x){
   return(results)
 }
 
-ab <- data.frame(best_model(model_list))
-ab
-which.max(ab)
+accuracy_results <- data.frame(best_model(model_list))
+accuracy_results
+which.max(accuracy_results)
 
 
 ###################################
