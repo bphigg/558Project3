@@ -182,3 +182,29 @@ The logLoss for this model is better than the logistic regression and random for
 
 # Final Model Selection
 
+Now that we have our six trained models, we'll test them on the test data and select the model with the highest accuracy as the winner. To do this, we'll write a function that will take in a list of the model names and run them through a `for loop`  that will run `predict()` and `confusionMatrix()` on each and store the Accuracy rating in another list.
+```{r model_selection}
+model_list <- list(logreg_fit1, rf_fit, lda_fit)
+
+best_model <- function(x){
+  results <- list()
+  for(i in 1:length(x)){
+    pred <- predict(x[i], newdata = diabetesTest)
+    result <- confusionMatrix(pred[[1]], diabetesTest$Diabetes_binary)
+    results[i] <- result$overall[1]
+  }
+  names(results) <- c("logreg", "rf", "lda")
+  return(results)
+}
+
+accuracy_results <- data.frame(best_model(model_list))
+```
+Now we have the Accuracy rating for each of our models stored in `accuracy_results`. Let's take a look at all the results and run `which.max()` to determine the best performing model.
+```{r results}
+accuracy_results
+which.max(accuracy_results)
+```
+The best model for the `elementary` category is
+```{r best, echo=FALSE}
+which.max(accuracy_results)
+```
