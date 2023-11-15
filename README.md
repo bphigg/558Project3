@@ -19,7 +19,7 @@ This is the landing page for **558 Project 3** Below are the links to reports fo
 
 [High School Graduate](https://bphigg.github.io/558Project3/HighSchoolGrad)
 
-[Collge](https://bphigg.github.io/558Project3/College)
+[College](https://bphigg.github.io/558Project3/College)
 
 [College Grad](https://bphigg.github.io/558Project3/CollegeGrad)
 
