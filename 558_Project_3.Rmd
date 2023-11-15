@@ -77,6 +77,7 @@ diabetes %>% group_by(Income) %>% summarize(mean(Diabetes_binary), sd(Diabetes_b
 
 How does BMI relate to diabetes? Here we'll see a density histogram that shows the distribution of both diabetes (1) and no diabetes (0) by BMI.
 ```{r BMI_hist}
+library(ggplot2)
 g <- ggplot(diabetes, aes(x=BMI))
 g + geom_histogram(aes(fill = as.factor(Diabetes_binary), y = ..density..), position = "dodge") +
   labs(title = "Density Histogram - BMI", fill = "Diabetes")
@@ -93,6 +94,7 @@ g + geom_point(aes(color = as.factor(Diabetes_binary)), position = "jitter") +
 
 It's likely some of the variables will be correlated since so many are refer to health indicators, so here's a correlation plot that will show us the strength of any correlations.
 ```{r corrplot}
+library(corrplot)
 correlation <- cor(select(diabetes, Diabetes_binary, HighBP, HighChol, CholCheck, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, DiffWalk, m_hlth, p_hlth), method = "spearman")
 corrplot(correlation, type = 'upper', tl.pos = 'lt')
 ```
@@ -176,6 +178,7 @@ Linear Discriminant Analysis identifies the most discriminitive features of the 
 
 We'll go ahead and fit a LDA model using all variables and compare the results to our previous models.
 ```{r lda}
+library(MASS)
 lda_fit <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "lda",
                  metric = "logLoss",
                  PreProcess = c("center", "scale"),
