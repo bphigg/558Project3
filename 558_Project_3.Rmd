@@ -117,7 +117,7 @@ Before we start modeling, we'll need to create a new factor column based on `Dia
 ```{r data-split}
 library(caret)
 diabetes$Diabetes_fac <- if_else(diabetes$Diabetes_binary == 0, "negative", "positive")
-diabetes$Diabetes_fac <- as.factor(diabetes$Diabetes_binary)
+diabetes$Diabetes_fac <- as.factor(diabetes$Diabetes_fac)
 
 ### Data Split
 set.seed(21)
@@ -211,6 +211,7 @@ The logLoss for this model is better than the logistic regression and random for
 
 Now that we have our six trained models, we'll test them on the test data and select the model with the lowest logLoss as the winner. To do this, we'll write a function that will take in a list of the model names and run them through a `for loop`  that will run `predict()` and calculate `LogLoss()` on each with the results appended to a list. Note the `test_logloss` argument that we pulled from our test data before we deleted the `Diabetes_binary` columns. This `LogLoss()` function is what we were saving it for.
 ```{r model_selection}
+library(MLmetrics)
 model_list <- list(logreg_fit1, lda_fit)
 
 best_model <- function(x){
@@ -228,9 +229,9 @@ logloss_results <- data.frame(best_model(model_list))
 ```
 Now we have the LogLoss score for each of our models stored in `logloss_results`. Let's take a look at all the results.
 ```{r results}
-accuracy_results
+logloss_results
 ```
 The best model
 ```{r best, echo=FALSE}
-which.min(accuracy_results)
+which.min(logloss_results)
 ```

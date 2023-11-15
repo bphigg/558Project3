@@ -27,20 +27,12 @@ automation.
 library(tidyverse)
 library(dplyr)
 data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
-```
-
-    ## Rows: 253680 Columns: 22
-    ## ── Column specification ─────────────────────────────────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## dbl (22): Diabetes_binary, HighBP, HighChol, CholCheck, BMI, Smoker, Stroke, HeartDiseaseorAttack, PhysAc...
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
-diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Education == 3, 2, if_else(Education == 4, 3, if_else(Education == 5, 4, 5))))) %>%
+diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, 
+                    if_else(Education == 3, 2, if_else(Education == 4, 3, 
+                    if_else(Education == 5, 4, 5))))) %>%
   mutate(Education = factor(Education)) %>%
-  mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
+  mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", 
+                  "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
 # This is where automation will select the correct subset
   filter(Education == params$education) %>%
   dplyr::select(-Education)
@@ -60,17 +52,20 @@ diabetes <- diabetes %>%
   mutate(PhysHlth = if_else(PhysHlth == 0, 0, 1)) %>%
 ### create factors
   mutate(GenHlth = factor(GenHlth)) %>%
-  mutate(GenHlth = recode(GenHlth, "1" = "excellent", "2" = "very_good", "3" = "good", "4" = "fair", "5" = "poor")) %>%
+  mutate(GenHlth = recode(GenHlth, "1" = "excellent", "2" = "very_good", 
+                          "3" = "good", "4" = "fair", "5" = "poor")) %>%
   mutate(Sex = factor(Sex)) %>%
   mutate(Sex = recode(Sex, "0" = "female", "1" = "male")) %>%
   mutate(Age = factor(Age)) %>%
-  mutate(Age = recode(Age, "1" = "18_24", "2" = "25_29", "3" = "30_34", "4" = "35_39", "5" = "40_44", "6" = "45_49", "7" = "50_54", "8" = "55_59", "9" = "60_64", "10" = "65_69", "11" = "70_74", "12" = "75_79", "13" = "> 80")) %>%
+  mutate(Age = recode(Age, "1" = "18_24", "2" = "25_29", "3" = "30_34", 
+                      "4" = "35_39", "5" = "40_44", "6" = "45_49", "7" = "50_54", 
+                      "8" = "55_59", "9" = "60_64", "10" = "65_69", "11" = "70_74", 
+                      "12" = "75_79", "13" = "> 80")) %>%
   mutate(Income = factor(Income)) %>%
-  mutate(Income = recode(Income, "1" = "10k", "2" = "15k", "3" = "20k", "4" = "25k", "5" = "35k", "6" = "50k", "7" = "75k", "8" = "greater_75k")) %>%
+  mutate(Income = recode(Income, "1" = "10k", "2" = "15k", "3" = "20k", "4" = "25k", 
+                         "5" = "35k", "6" = "50k", "7" = "75k", "8" = "greater_75k")) %>%
   mutate(Smoker = factor(Smoker)) %>%
   mutate(Smoker = recode(Smoker, "0" = "no", "1" = "yes"))
-### Drop original Ment&PhysHlth
-  #select(-MentHlth, -PhysHlth)
 ```
 
 Two variables were re-coded with respect to modeling. `MentHlth` and
@@ -87,8 +82,8 @@ so we can run quantitative summaries on it.
 
 # Summarizations
 
-First, let’s get an idea of the overall diabetes rate for the
-`elementary` education level.
+First, let’s get an idea of the overall diabetes rate for this education
+level.
 
 ``` r
 mean(diabetes$Diabetes_binary)
@@ -160,8 +155,6 @@ g + geom_histogram(aes(fill = as.factor(Diabetes_binary), y = ..density..), posi
   labs(title = "Density Histogram - BMI", fill = "Diabetes")
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
 ![](Elementary_files/figure-gfm/BMI_hist-1.png)<!-- --> <br>
 
 From the data description, the `GenHlth` variable appears to be
@@ -175,14 +168,15 @@ variable in predicting diabetes.
 ``` r
 g <- ggplot(diabetes, aes(x = GenHlth, y = BMI))
 g + geom_point(aes(color = as.factor(Diabetes_binary)), position = "jitter") +
-  labs(y = "BMI", title = "Self-Reported Health vs. BMI", x = "General Health") + guides(color = guide_legend(title = "diabetes"))
+  labs(y = "BMI", title = "Self-Reported Health vs. BMI", x = "General Health") + 
+  guides(color = guide_legend(title = "diabetes"))
 ```
 
 ![](Elementary_files/figure-gfm/bmi_genhlth-1.png)<!-- --> <br>
 
 It’s likely some of the variables will be correlated since so many are
-refer to health indicators, so here’s a correlation plot that will show
-us the strength of any correlations.
+health indicators, so here’s a correlation plot that will show us the
+strength of any correlations.
 
 ``` r
 library(corrplot)
@@ -190,24 +184,37 @@ correlation <- cor(dplyr::select(diabetes, Diabetes_binary, HighBP, HighChol, Ch
 corrplot(correlation, type = 'upper', tl.pos = 'lt')
 ```
 
-![](Elementary_files/figure-gfm/corrplot-1.png)<!-- --> <br> \# Modeling
+![](Elementary_files/figure-gfm/corrplot-1.png)<!-- --> <br>
 
-Before we start modeling, we’ll need to convert `Diabetes_binary` to a
-factor and then split our data into a training and test set.
+# Modeling
+
+Before we start modeling, we’ll need to create a new factor column based
+on `Diabetes_binary`. This factored version will be used in modeling and
+the numeric version we’ll save until the data split.
 
 ``` r
 library(caret)
-diabetes$Diabetes_binary <- if_else(diabetes$Diabetes_binary == 0, "negative", "positive")
-diabetes$Diabetes_binary <- as.factor(diabetes$Diabetes_binary)
+diabetes$Diabetes_fac <- if_else(diabetes$Diabetes_binary == 0, "negative", "positive")
+diabetes$Diabetes_fac <- as.factor(diabetes$Diabetes_fac)
 
 ### Data Split
 set.seed(21)
-dfIndex <- createDataPartition(diabetes$Diabetes_binary, p = 0.7, list = FALSE)
+dfIndex <- createDataPartition(diabetes$Diabetes_fac, p = 0.7, list = FALSE)
 diabetesTrain <- diabetes[dfIndex, ]
 diabetesTest <- diabetes[-dfIndex, ]
+# create a numeric vector for final model selection
+test_logloss <- diabetesTest$Diabetes_binary
+# delete the Diabetes_binary column from both test and train sets
+diabetesTrain <- diabetesTrain %>% dplyr::select(-Diabetes_binary)
+diabetesTest <- diabetesTest %>% dplyr::select(-Diabetes_binary)
 ```
 
-<br>
+At the end, we’ll be selecting the best performing model based on
+`LogLoss` results. In order to run the `LogLoss()` function efficiently,
+we’ll need a vector of the results from the test set. So we’ve created
+that vector as `test_logloss` and then deleted the numeric columns
+`Diabetes_binary` from both the test and train sets so they will not
+interfere with the modeling and testing. <br>
 
 ## LogLoss
 
@@ -245,19 +252,19 @@ and also include some interactions.
 
 ``` r
 set.seed(223)
-logreg_fit1 <- train(Diabetes_binary ~ ., data=diabetesTrain, method="glm", family="binomial",
+logreg_fit1 <- train(Diabetes_fac ~ ., data=diabetesTrain, method="glm", family="binomial",
                      metric="logLoss",
                   preProcess=c("center", "scale"),
                   trControl = trainControl(method="cv", number = 5, 
                                            classProbs=TRUE, summaryFunction=mnLogLoss))
 
-logreg_fit2 <- train(Diabetes_binary ~ BMI + poly(Smoker, 2, raw=TRUE) + Fruits:Veggies + HighBP + HighChol, data=diabetesTrain, method="glm", family="binomial",
+logreg_fit2 <- train(Diabetes_fac ~ BMI + poly(Smoker, 2, raw=TRUE) + Fruits:Veggies + HighBP + HighChol, data=diabetesTrain, method="glm", family="binomial",
                      metric="logLoss",
                      preProcess=c("center", "scale"),
                      trControl = trainControl(method="cv", number = 5, 
                                               classProbs=TRUE, summaryFunction=mnLogLoss))
 
-logreg_fit3 <- train(Diabetes_binary ~ BMI + Age + Income + BMI:Age + BMI:Income + 
+logreg_fit3 <- train(Diabetes_fac ~ BMI + Age + Income + BMI:Age + BMI:Income + 
                        HighBP:HighChol + Smoker, data=diabetesTrain,
                      method="glm", family="binomial",
                      metric="logLoss",
@@ -285,8 +292,7 @@ logreg_fit3$results
     ##   parameter   logLoss  logLossSD
     ## 1      none 0.5592215 0.01858864
 
-The best LogLoss value of the three models is `logreg_fit1`, so we’ll be
-selecting this to move forward.
+The best LogLoss value of the three models is `logreg_fit1`.
 
 ## Random Forest
 
@@ -304,7 +310,7 @@ automatically select the best fit to use when we run our predictions, so
 we will not need to evaluate mulitple results.
 
 ``` r
-#rf_fit <- train(Diabetes_binary ~., data = diabetesTrain, method = "rf",
+#rf_fit <- train(Diabetes_fac ~., data = diabetesTrain, method = "rf",
 #                metric = "logLoss",
 #                preProcess = c("center", "scale"),
 #                trControl = trainControl(method = "cv", number = 5, 
@@ -334,7 +340,7 @@ results to our previous models.
 
 ``` r
 library(MASS)
-lda_fit <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "lda",
+lda_fit <- train(Diabetes_fac ~ ., data = diabetesTrain, method = "lda",
                  metric = "logLoss",
                  PreProcess = c("center", "scale"),
                  trControl = trainControl(method = "cv", number = 5, 
@@ -352,48 +358,43 @@ random forest. So we’ll go ahead and select the fit using all variables.
 # Final Model Selection
 
 Now that we have our six trained models, we’ll test them on the test
-data and select the model with the highest accuracy as the winner. To do
+data and select the model with the lowest logLoss as the winner. To do
 this, we’ll write a function that will take in a list of the model names
 and run them through a `for loop` that will run `predict()` and
-`confusionMatrix()` on each and store the Accuracy rating in another
-list.
+calculate `LogLoss()` on each with the results appended to a list. Note
+the `test_logloss` argument that we pulled from our test data before we
+deleted the `Diabetes_binary` columns. This `LogLoss()` function is what
+we were saving it for.
 
 ``` r
+library(MLmetrics)
 model_list <- list(logreg_fit1, lda_fit)
 
 best_model <- function(x){
   results <- list()
   for(i in 1:length(x)){
-    pred <- predict(x[i], newdata = diabetesTest)
-    result <- confusionMatrix(pred[[1]], diabetesTest$Diabetes_binary)
-    results[i] <- result$overall[1]
+    pred <- data.frame(predict(x[i], newdata = diabetesTest, type = "prob"))
+    l_loss <- LogLoss(pred$positive, test_logloss)
+    results[i] <- l_loss
   }
-  names(results) <- c("logreg", "linear discriminant analysis")
+  names(results) <- c("logreg", "linear discriminate")
   return(results)
 }
 
-accuracy_results <- data.frame(best_model(model_list))
+logloss_results <- data.frame(best_model(model_list))
 ```
 
-Now we have the Accuracy rating for each of our models stored in
-`accuracy_results`. Let’s take a look at all the results and run
-`which.max()` to determine the best performing model.
+Now we have the LogLoss score for each of our models stored in
+`logloss_results`. Let’s take a look at all the results.
 
 ``` r
-accuracy_results
+logloss_results
 ```
 
-    ##      logreg linear.discriminant.analysis
-    ## 1 0.7462451                     0.744664
+    ##      logreg linear.discriminate
+    ## 1 0.5152128           0.5166469
 
-``` r
-which.max(accuracy_results)
-```
-
-    ## logreg 
-    ##      1
-
-The best model for the `elementary` category is
+The best model
 
     ## logreg 
     ##      1
