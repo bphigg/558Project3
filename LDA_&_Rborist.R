@@ -2,7 +2,7 @@ library(MASS)
 
 ### Linear Discriminate Analysis
 
-lda_fit <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "lda",
+lda_fit <- train(Diabetes_fac ~ ., data = diabetesTrain, method = "lda",
                  metric = "logLoss",
                  PreProcess = c("center", "scale"),
                  trControl = trainControl(method = "cv", number = 5, 

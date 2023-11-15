@@ -1,6 +1,6 @@
 ### Random Forest
 
-rf_fit <- train(Diabetes_binary ~., data = diabetesTrain, method = "rf",
+rf_fit <- train(Diabetes_fac ~., data = diabetesTrain, method = "rf",
                 metric = "logLoss",
                 preProcess = c("center", "scale"),
                 trControl = trainControl(method = "cv", number = 5, 

@@ -1,5 +1,7 @@
 library(caret)
 library(tidyverse)
+install.packages("MLmetrics")
+library(MLmetrics)
 
 model_names <- c("logreg_fit1", "rf_fit", "lda_fit")
 model <- c(logreg_fit1, rf_fit, lda_fit)
@@ -53,3 +55,32 @@ ab <- append(ab, c("logitc" = confusionMatrix(predict(logreg_fit1, newdata = dia
 
 practice_list <- list("x" = "hello", "y" = "goodbye")
 p_n <- names(practice_list[1])
+
+p_n <- predict(logreg_fit1, newdata = diabetesTest, type = "prob")
+str(p_n)
+p_n_result <- confusionMatrix(p_n, diabetesTest$Diabetes_binary)
+LogLoss(p_n[[2]], test_logloss)
+
+##############################
+#### Final Model Selection LogLoss
+###############################
+
+model_list <- list(logreg_fit1, rf_fit, lda_fit)
+
+best_model <- function(x){
+  results <- list()
+  for(i in 1:length(x)){
+    pred <- data.frame(predict(x[i], newdata = diabetesTest, type = "prob"))
+    l_loss <- LogLoss(pred$positive, test_logloss)
+    results[i] <- l_loss
+  }
+  names(results) <- c("logreg", "random forest", "linear discriminate")
+  return(results)
+}
+
+accuracy_results <- data.frame(best_model(model_list))
+accuracy_results
+which.min(accuracy_results)
+
+###################################
+ax <- best_model(model_list)
