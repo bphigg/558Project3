@@ -7,6 +7,7 @@ library(ggplot2)
 library(corrplot)
 library(MASS)
 library(tidyverse)
+library(dplyr)
 library(caret)
 library(rmarkdown)
 

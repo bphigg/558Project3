@@ -2,7 +2,8 @@
 title: "558_Project_3"
 author: "ankit gupta & brian higginbotham"
 date: "2023-11-08"
-output: github_document
+output: github_document:
+  html_preview: false
 params:
   education: "Elementary"
 
@@ -25,13 +26,14 @@ For the longer categorical variables - education, age, and income - the initial 
 In order to conduct our analysis on separate education levels, we'll need do so some data prep on the original file. First, the education variable will need to be reduced to five categories by combining the first and second levels (the "no education" and "elementary education" levels.) We will then convert the variable to a factor and add the appropriate level descriptions that will be used in the report automation.
 ```{r data-read, results = "hide"}
 library(tidyverse)
+library(dplyr)
 data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Education == 3, 2, if_else(Education == 4, 3, if_else(Education == 5, 4, 5))))) %>%
   mutate(Education = factor(Education)) %>%
   mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
 # This is where automation will select the correct subset
   filter(Education == params$education) %>%
-  dpylr::select(-Education)
+  dplyr::select(-Education)
 ```
 Most columns in the initial dataset are binary (0 or 1) for the variable description but a few represent categorical data coded numerically and a few also represent actual numerical measurements. We'll  convert the categorical variables to factors to help with the Exploratory Data Analysis as well as a few binary variables. Again, the descriptions for the categories was taken from the above codebook.
 ```{r factoring}

@@ -25,6 +25,7 @@ automation.
 
 ``` r
 library(tidyverse)
+library(dplyr)
 data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 ```
 
@@ -41,7 +42,8 @@ diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Educa
   mutate(Education = factor(Education)) %>%
   mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
 # This is where automation will select the correct subset
-  filter(Education == params$education)
+  filter(Education == params$education) %>%
+  dplyr::select(-Education)
 ```
 
 Most columns in the initial dataset are binary (0 or 1) for the variable
@@ -183,12 +185,13 @@ refer to health indicators, so here’s a correlation plot that will show
 us the strength of any correlations.
 
 ``` r
-#library(corrplot)
-#correlation <- cor(select(diabetes, Diabetes_binary, HighBP, HighChol, CholCheck, Stroke, #HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, #DiffWalk, MentHlth, PhysHlth), method = "spearman")
-#corrplot(correlation, type = 'upper', tl.pos = 'lt')
+library(corrplot)
+correlation <- cor(dplyr::select(diabetes, Diabetes_binary, HighBP, HighChol, CholCheck, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, DiffWalk, MentHlth, PhysHlth), method = "spearman")
+corrplot(correlation, type = 'upper', tl.pos = 'lt')
 ```
 
-<br> \# Modeling
+![](CollegeGrad_files/figure-gfm/corrplot-1.png)<!-- --> <br> \#
+Modeling
 
 Before we start modeling, we’ll need to convert `Diabetes_binary` to a
 factor and then split our data into a training and test set.
@@ -331,15 +334,18 @@ We’ll go ahead and fit a LDA model using all variables and compare the
 results to our previous models.
 
 ``` r
-#library(MASS)
-#lda_fit <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "lda",
-#                 metric = "logLoss",
-#                 PreProcess = c("center", "scale"),
-#                 trControl = trainControl(method = "cv", number = 5, 
-#                                          classProbs=TRUE, summaryFunction=mnLogLoss))
+library(MASS)
+lda_fit <- train(Diabetes_binary ~ ., data = diabetesTrain, method = "lda",
+                 metric = "logLoss",
+                 PreProcess = c("center", "scale"),
+                 trControl = trainControl(method = "cv", number = 5, 
+                                          classProbs=TRUE, summaryFunction=mnLogLoss))
 
-#lda_fit$results
+lda_fit$results
 ```
+
+    ##   parameter   logLoss   logLossSD
+    ## 1      none 0.2588183 0.002354822
 
 The logLoss for this model is better than the logistic regression and
 random forest. So we’ll go ahead and select the fit using all variables.
@@ -354,7 +360,7 @@ and run them through a `for loop` that will run `predict()` and
 list.
 
 ``` r
-model_list <- list(logreg_fit1)
+model_list <- list(logreg_fit1, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -363,7 +369,7 @@ best_model <- function(x){
     result <- confusionMatrix(pred[[1]], diabetesTest$Diabetes_binary)
     results[i] <- result$overall[1]
   }
-  names(results) <- c("logreg")
+  names(results) <- c("logreg", "linear discriminant analysis")
   return(results)
 }
 
@@ -378,8 +384,8 @@ Now we have the Accuracy rating for each of our models stored in
 accuracy_results
 ```
 
-    ##      logreg
-    ## 1 0.9060161
+    ##      logreg linear.discriminant.analysis
+    ## 1 0.9060161                    0.8998043
 
 ``` r
 which.max(accuracy_results)
