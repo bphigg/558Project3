@@ -3,10 +3,16 @@ title: "558_Project_3"
 author: "ankit gupta & brian higginbotham"
 date: "2023-11-08"
 output: github_document
+params:
+  education: "Elementary"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, error = FALSE)
+```
+
+```{r parameter, echo=FALSE}
+params$education
 ```
 
 # Introduction
@@ -23,7 +29,7 @@ diabetes <- data %>% mutate(Education = if_else(Education <= 2, 1, if_else(Educa
   mutate(Education = factor(Education)) %>%
   mutate(Education = recode(Education, "1" = "Elementary", "2" = "HighSchool", "3" = "HighSchoolGrad", "4" = "College", "5" = "CollegeGrad")) %>% 
 # This is where automation will select the correct subset
-  filter(Education == "Elementary") %>% 
+  filter(Education == params$education) %>% 
   select(-Education)
 ```
 Most columns in the initial dataset are binary (0 or 1) for the variable description but a few represent categorical data coded numerically and a few also represent actual numerical measurements. We'll  convert the categorical variables to factors to help with the Exploratory Data Analysis as well as a few binary variables. Again, the descriptions for the categories was taken from the above codebook.
