@@ -28,7 +28,7 @@ g + geom_point(aes(color = as.factor(Diabetes_binary)), position = "jitter") +
   labs(y = "BMI", title = "Self-Reported Health vs. BMI", x = "General Health") + guides(color = guide_legend(title = "diabetes"))
 
 ### corrplot all numerical variables
-correlation <- cor(select(diabetes, Diabetes_binary, HighBP, HighChol, CholCheck, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, DiffWalk, m_hlth, p_hlth), method = "spearman")
+correlation <- cor(dplyr::select(diabetes, Diabetes_binary, HighBP, HighChol, CholCheck, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, DiffWalk, MentHlth, PhysHlth), method = "spearman")
 corrplot(correlation, type = 'upper', tl.pos = 'lt')
 
 ###
