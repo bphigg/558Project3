@@ -21,3 +21,6 @@ diabetesTest <- diabetes[-dfIndex, ]
 test_logloss <- diabetesTest$Diabetes_binary
 diabetesTrain <- diabetesTrain %>% dplyr::select(-Diabetes_binary)
 diabetesTest <- diabetesTest %>% dplyr::select(-Diabetes_binary)
+
+write_csv(diabetesTrain, "diabetesTrain.csv")
+write_csv(diabetesTest, "diabetesTest.csv")
