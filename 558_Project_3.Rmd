@@ -302,7 +302,7 @@ SVM is a viable model as it has an logloss of .5344. The model does better with 
 Now that we have our six trained models, we'll test them on the test data and select the model with the lowest logLoss as the winner. To do this, we'll write a function that will take in a list of the model names and run them through a `for loop`  that will run `predict()` and calculate `LogLoss()` on each with the results appended to a list. Note the `test_logloss` argument that we pulled from our test data before we deleted the `Diabetes_binary` columns. This `LogLoss()` function is what we were saving it for.
 ```{r model_selection}
 library(MLmetrics)
-model_list <- list(logreg_fit1, log_lasso, svm, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, rf_fit, svm, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -311,7 +311,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "lasso", "svm", "linear discriminate")
+  names(results) <- c("logreg", "lasso", "rf_fit", "svm", "lda")
   return(results)
 }
 

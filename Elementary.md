@@ -556,7 +556,7 @@ we were saving it for.
 
 ``` r
 library(MLmetrics)
-model_list <- list(logreg_fit1, log_lasso, svm, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, rf_fit, svm, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -565,7 +565,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "lasso", "svm", "linear discriminate")
+  names(results) <- c("logreg", "lasso", "rf_fit", "svm", "lda")
   return(results)
 }
 
@@ -579,8 +579,8 @@ Now we have the LogLoss score for each of our models stored in
 logloss_results
 ```
 
-    ##      logreg     lasso       svm linear.discriminate
-    ## 1 0.5152128 0.5168335 0.5275683           0.5166469
+    ##      logreg     lasso    rf_fit       svm       lda
+    ## 1 0.5152128 0.5168335 0.5245452 0.5275683 0.5166469
 
 The best model
 
