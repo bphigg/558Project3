@@ -25,4 +25,4 @@ diabetes <- diabetes %>%
   mutate(Smoker = recode(Smoker, "0" = "no", "1" = "yes"))
 ### Drop original Ment&PhysHlth
   #select(-MentHlth, -PhysHlth)
-
+write_csv(diabetes, "diabetes_eda.csv")

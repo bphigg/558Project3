@@ -20,6 +20,12 @@ params$education
 
 # Introduction
 
+In this analysis, we explore a dataset focusing on diabetes, utilizing R  for our examination. The dataset contains essential variables that offer insights into various aspects related to diabetes. The key variables we will be working with include demographic information, physiological measurements, and medical indicators. It is important to note that the dataset contains information from individuals with and without diabetes, making it a valuable resource for understanding the factors associated with the condition
+
+Our primary goal is to conduct an in-depth Exploratory Data Analysis to gain insights into the relationships between various variables and the presence or absence of diabetes. Through statistical summaries, visualizations, and correlation analyses, we aim to uncover patterns, identify potential predictors, and understand the distribution of key features within the dataset, mainly BMI, General Health, Age and Income.
+
+Furthermore, we will develop predictive models to explore the ability of the selected variables to accurately predict diabetes outcomes. We plan to employ machine learning techniques, such as logistic regression or a support vector machine, to select a best model that can effectively classify individuals as diabetic or non-diabetic based on the available features.
+
 # Data
 
 For the longer categorical variables - education, age, and income - the initial data set did not provide a thorough description of the categories. References to [this codebook](https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf) were used for the full descriptions of the categorical variables.

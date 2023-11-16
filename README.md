@@ -12,6 +12,7 @@ This is the landing page for **558 Project 3** Below are the links to reports fo
 * library(caret)  
 * library(rmarkdown)  
 * library(MLmetrics)
+* library(vcd)
 
 [Elementary](https://bphigg.github.io/558Project3/Elementary)
 

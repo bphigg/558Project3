@@ -47,3 +47,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# backup Rmd file
+558_Project_3a.Rmd
