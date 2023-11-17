@@ -311,14 +311,14 @@ SVMs are effective in high-dimensional spaces and are widely used in various app
 
 ```{r svm}
 
-svm <- train(Diabetes_fac ~., data = diabetesTrain, 
-             method = "svmLinear", 
-             metric = "logLoss",
-            trControl = trainControl(method = "cv", number = 5, 
-                                     classProbs=TRUE, summaryFunction=mnLogLoss),  
-               preProcess = c("center","scale"))
+#svm <- train(Diabetes_fac ~., data = diabetesTrain, 
+#             method = "svmLinear", 
+#             metric = "logLoss",
+#            trControl = trainControl(method = "cv", number = 5, 
+#                                     classProbs=TRUE, summaryFunction=mnLogLoss),  
+#               preProcess = c("center","scale"))
 
-svm
+#svm
 ```
 SVM is a viable model as it has an logloss similar to the other models. The model does better with more complex data making it better with higher dimensional data,
 
@@ -328,7 +328,7 @@ SVM is a viable model as it has an logloss similar to the other models. The mode
 Now that we have our six trained models, we'll test them on the test data and select the model with the lowest logLoss as the winner. To do this, we'll write a function that will take in a list of the model names and run them through a `for loop`  that will run `predict()` and calculate `LogLoss()` on each with the results appended to a list. Note the `test_logloss` argument that we pulled from our test data before we deleted the `Diabetes_binary` columns. This `LogLoss()` function is what we were saving it for.
 ```{r model_selection}
 library(MLmetrics)
-model_list <- list(logreg_fit1, log_lasso, cl_tree, rf_fit, svm, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, cl_tree, rf_fit, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -337,7 +337,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "lasso", "cl_tree", "rf_fit", "svm", "lda")
+  names(results) <- c("logreg", "lasso", "cl_tree", "rf_fit", "lda")
   return(results)
 }
 

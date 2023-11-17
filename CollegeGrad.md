@@ -7,6 +7,29 @@ ankit gupta & brian higginbotham
 
 # Introduction
 
+In this analysis, we explore a dataset focusing on diabetes, utilizing R
+for our examination. The dataset contains essential variables that offer
+insights into various aspects related to diabetes. The key variables we
+will be working with include demographic information, physiological
+measurements, and medical indicators. It is important to note that the
+dataset contains information from individuals with and without diabetes,
+making it a valuable resource for understanding the factors associated
+with the condition
+
+Our primary goal is to conduct an in-depth Exploratory Data Analysis to
+gain insights into the relationships between various variables and the
+presence or absence of diabetes. Through statistical summaries,
+visualizations, and correlation analyses, we aim to uncover patterns,
+identify potential predictors, and understand the distribution of key
+features within the dataset, mainly BMI, General Health, Age and Income.
+
+Furthermore, we will develop predictive models to explore the ability of
+the selected variables to accurately predict diabetes outcomes. We plan
+to employ machine learning techniques, such as logistic regression or a
+support vector machine, to select a best model that can effectively
+classify individuals as diabetic or non-diabetic based on the available
+features.
+
 # Data
 
 For the longer categorical variables - education, age, and income - the
@@ -186,6 +209,44 @@ corrplot(correlation, type = 'upper', tl.pos = 'lt')
 
 ![](CollegeGrad_files/figure-gfm/corrplot-1.png)<!-- --> <br>
 
+``` r
+library(vcd)
+mosaicplot(~ Income + GenHlth, data = diabetes, color = TRUE, main = 'General Health by Income Bracket')
+```
+
+![](CollegeGrad_files/figure-gfm/vcd-1.png)<!-- --> <br> Here we can see
+general trend where individuals with better health often have a higher
+income. There are more factors in play, but it is generally assumed that
+higher income individuals will be able to afford more services.
+
+``` r
+library(vcd)
+mosaicplot(~ Age + GenHlth, data = diabetes, color = TRUE, main = 'General Health by Age')
+```
+
+![](CollegeGrad_files/figure-gfm/stack1-1.png)<!-- --> Another
+interesting finding here is that health starts to level out at Age of
+50. Also intersting is that folks past the age of 80 reported improved
+health over the brackets before. Perhaps life satisfaction and more time
+outside of the workplace could be hypothetical explanations.
+
+``` r
+library(ggplot2)
+
+# Assuming mydata is your data frame
+ggplot(diabetes, aes(x = GenHlth, y = BMI)) +
+  geom_violin() +
+  labs(title = "Violin Plot of BMI by Health Eval",
+       x = "Health",
+       y = "BMI") +
+  theme_minimal()
+```
+
+![](CollegeGrad_files/figure-gfm/stack2-1.png)<!-- --> Interesting here
+that there doesn’t seem to be a great difference in BMI by way of Health
+which is head scratching. However, BMI is not the most accurate
+predictor of prime health, as muscle mass can skew these numbers.
+
 # Modeling
 
 Before we start modeling, we’ll need to create a new factor column based
@@ -294,6 +355,90 @@ logreg_fit3$results
 
 The best LogLoss value of the three models is `logreg_fit1`.
 
+## Lasso Regression
+
+Lasso regression, short for Least Absolute Shrinkage and Selection
+Operator, is a linear regression technique that includes a penalty term
+to the ordinary least squares (OLS) objective function. The purpose of
+this penalty term is to encourage the model to prefer simpler models
+with fewer predictor variables, effectively driving some of the
+coefficients to zero.
+
+In lasso regression, the objective function is modified by adding the
+sum of the absolute values of the regression coefficients multiplied by
+a regularization parameter (often denoted as λ
+
+In classification tasks, logistic regression is a standard choice, while
+lasso regression is more commonly used for regression problems with a
+focus on regularization and feature selection.
+
+``` r
+library(caret)
+#diabetesTest
+
+log_lasso <- train(Diabetes_fac ~ . ,data=diabetesTrain,
+                  method="glmnet",
+                  family="binomial",
+                  metric="logLoss",
+                  preProcess = c("center", "scale"),
+                   trControl = trainControl(method="cv", number = 5, 
+                                              classProbs=TRUE, summaryFunction=mnLogLoss))
+
+log_lasso$results
+```
+
+    ##   alpha       lambda   logLoss   logLossSD
+    ## 1  0.10 0.0001471978 0.2459069 0.002235115
+    ## 2  0.10 0.0014719781 0.2460707 0.002180291
+    ## 3  0.10 0.0147197811 0.2494648 0.001875980
+    ## 4  0.55 0.0001471978 0.2458979 0.002251310
+    ## 5  0.55 0.0014719781 0.2463736 0.002182467
+    ## 6  0.55 0.0147197811 0.2564444 0.001984317
+    ## 7  1.00 0.0001471978 0.2459025 0.002246654
+    ## 8  1.00 0.0014719781 0.2467938 0.002175102
+    ## 9  1.00 0.0147197811 0.2621958 0.001862358
+
+## Classification Tree
+
+A classification tree, also known as a decision tree, is a supervised
+machine learning algorithm used for both classification and regression
+tasks. In the context of classification, the algorithm builds a
+tree-like structure to make predictions about the categorical target
+variable.
+
+Classification trees are interpretable and easy to understand, making
+them useful for visualizing decision-making processes. However, they can
+be prone to overfitting, especially if the tree is allowed to grow too
+deep and capture noise in the training data. Techniques like pruning
+(removing branches of the tree) and setting constraints on the tree’s
+growth help mitigate overfitting.
+
+``` r
+#library(doParallel)
+#library(parallel)
+
+#cl <- makeCluster(7)
+#registerDoParallel(cl)
+#getDoParWorkers()
+
+cl_tree = train(Diabetes_fac ~ ., 
+                  data=diabetesTrain, 
+                  method="rpart", 
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", classProbs=TRUE, summaryFunction=mnLogLoss))
+
+#stopCluster(cl)
+cl_tree$results
+```
+
+    ##             cp   logLoss   logLossSD
+    ## 1 0.0005837912 0.2760207 0.003158074
+    ## 2 0.0009615385 0.2784932 0.002702446
+    ## 3 0.0026098901 0.3024412 0.020427437
+
+Best model has a logloss similar to our previous models, not a bad
+metric for this problem.
+
 ## Random Forest
 
 Random Forest utilizes bootstrap aggregation to calculate the average
@@ -310,16 +455,30 @@ automatically select the best fit to use when we run our predictions, so
 we will not need to evaluate mulitple results.
 
 ``` r
-#rf_fit <- train(Diabetes_fac ~., data = diabetesTrain, method = "rf",
-#                metric = "logLoss",
-#                preProcess = c("center", "scale"),
-#                trControl = trainControl(method = "cv", number = 5, 
-#                                         classProbs=TRUE, summaryFunction=mnLogLoss),
-#                tuneGrid = data.frame(mtry = 1:6))
+rf_fit <- train(Diabetes_fac ~., data = diabetesTrain, method = "rf",
+                metric = "logLoss",
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method = "cv", number = 5, 
+                                         classProbs=TRUE, summaryFunction=mnLogLoss),
+                tuneGrid = data.frame(mtry = 1:6))
 
-#rf_fit$results
-#rf_fit$bestTune
+rf_fit$results
 ```
+
+    ##   mtry   logLoss   logLossSD
+    ## 1    1 1.8458942 0.027793850
+    ## 2    2 0.9000801 0.020317701
+    ## 3    3 0.5672536 0.021189602
+    ## 4    4 0.4466514 0.011022628
+    ## 5    5 0.4040547 0.015831723
+    ## 6    6 0.3855848 0.006382353
+
+``` r
+rf_fit$bestTune
+```
+
+    ##   mtry
+    ## 6    6
 
 We went ahead and printed the results and the `$bestTune` to confirm
 that `caret::train` has selected the best model.
@@ -350,10 +509,43 @@ lda_fit$results
 ```
 
     ##   parameter   logLoss   logLossSD
-    ## 1      none 0.2588183 0.002354822
+    ## 1      none 0.2590258 0.004491146
 
-The logLoss for this model is better than the logistic regression and
-random forest. So we’ll go ahead and select the fit using all variables.
+The logLoss for this model is close to logistic regression and random
+forest models. So we’ll go ahead and select the fit using all variables.
+
+## Support Vector Machine
+
+A Support Vector Machine (SVM) is a supervised machine learning
+algorithm that can be used for both classification and regression tasks.
+However, it is more commonly associated with classification problems.
+The primary objective of an SVM is to find a hyperplane that best
+separates data points of different classes in a high-dimensional space.
+The hyperplane is chosen in such a way that it maximizes the margin
+between the two classes.
+
+SVMs are effective in high-dimensional spaces and are widely used in
+various applications, including image classification, handwriting
+recognition, bioinformatics, and text classification. They are
+particularly useful when the data has complex relationships and when a
+clear margin of separation between classes is desirable. SVMs have both
+linear and non-linear variants, making them versatile for a range of
+problems.
+
+``` r
+#svm <- train(Diabetes_fac ~., data = diabetesTrain, 
+#             method = "svmLinear", 
+#             metric = "logLoss",
+#            trControl = trainControl(method = "cv", number = 5, 
+#                                     classProbs=TRUE, summaryFunction=mnLogLoss),  
+#               preProcess = c("center","scale"))
+
+#svm
+```
+
+SVM is a viable model as it has an logloss similar to the other models.
+The model does better with more complex data making it better with
+higher dimensional data,
 
 # Final Model Selection
 
@@ -368,7 +560,7 @@ we were saving it for.
 
 ``` r
 library(MLmetrics)
-model_list <- list(logreg_fit1, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, cl_tree, rf_fit, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -377,7 +569,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "linear discriminate")
+  names(results) <- c("logreg", "lasso", "cl_tree", "rf_fit", "lda")
   return(results)
 }
 
@@ -391,8 +583,8 @@ Now we have the LogLoss score for each of our models stored in
 logloss_results
 ```
 
-    ##      logreg linear.discriminate
-    ## 1 0.2452942            0.257339
+    ##      logreg     lasso   cl_tree    rf_fit      lda
+    ## 1 0.2452942 0.2453906 0.2791425 0.3915967 0.257339
 
 The best model
 
