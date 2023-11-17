@@ -355,7 +355,7 @@ logreg_fit3$results
 
 The best LogLoss value of the three models is `logreg_fit1`.
 
-\##Lasso Regression
+## Lasso Regression
 
 Lasso regression, short for Least Absolute Shrinkage and Selection
 Operator, is a linear regression technique that includes a penalty term
@@ -374,35 +374,15 @@ focus on regularization and feature selection.
 
 ``` r
 library(caret)
-diabetesTest
-```
+#diabetesTest
 
-    ## # A tibble: 2,842 × 21
-    ##    HighBP HighChol CholCheck   BMI Smoker Stroke HeartDiseaseorAttack PhysActivity Fruits Veggies
-    ##     <dbl>    <dbl>     <dbl> <dbl> <fct>   <dbl>                <dbl>        <dbl>  <dbl>   <dbl>
-    ##  1      1        0         1    27 no          0                    0            1      1       1
-    ##  2      1        0         1    33 yes         0                    0            1      1       1
-    ##  3      1        1         1    24 yes         0                    0            0      1       1
-    ##  4      1        0         1    21 yes         0                    0            1      1       1
-    ##  5      0        0         0    24 yes         0                    0            1      0       1
-    ##  6      1        1         1    21 no          0                    0            0      1       1
-    ##  7      0        0         1    28 yes         0                    0            0      0       0
-    ##  8      1        1         1    45 no          0                    0            0      1       0
-    ##  9      1        0         1    32 yes         1                    1            0      1       1
-    ## 10      1        0         1    38 yes         1                    0            1      0       1
-    ## # ℹ 2,832 more rows
-    ## # ℹ 11 more variables: HvyAlcoholConsump <dbl>, AnyHealthcare <dbl>, NoDocbcCost <dbl>, GenHlth <fct>,
-    ## #   MentHlth <dbl>, PhysHlth <dbl>, DiffWalk <dbl>, Sex <fct>, Age <fct>, Income <fct>, Diabetes_fac <fct>
-
-``` r
 log_lasso <- train(Diabetes_fac ~ . ,data=diabetesTrain,
                   method="glmnet",
                   family="binomial",
+                  metric="logLoss",
                   preProcess = c("center", "scale"),
                    trControl = trainControl(method="cv", number = 5, 
                                               classProbs=TRUE, summaryFunction=mnLogLoss))
-
-
 
 log_lasso$results
 ```
@@ -418,9 +398,46 @@ log_lasso$results
     ## 8  1.00 0.0021815474 0.4717683 0.004207119
     ## 9  1.00 0.0218154743 0.4883431 0.005670893
 
+## Classification Tree
+
+A classification tree, also known as a decision tree, is a supervised
+machine learning algorithm used for both classification and regression
+tasks. In the context of classification, the algorithm builds a
+tree-like structure to make predictions about the categorical target
+variable.
+
+Classification trees are interpretable and easy to understand, making
+them useful for visualizing decision-making processes. However, they can
+be prone to overfitting, especially if the tree is allowed to grow too
+deep and capture noise in the training data. Techniques like pruning
+(removing branches of the tree) and setting constraints on the tree’s
+growth help mitigate overfitting.
+
 ``` r
-#alpha of .10 and regularization parameter (lambda) of 0.0230916176 gave us the strongest model
+#library(doParallel)
+#library(parallel)
+
+#cl <- makeCluster(7)
+#registerDoParallel(cl)
+#getDoParWorkers()
+
+cl_tree = train(Diabetes_fac ~ ., 
+                  data=diabetesTrain, 
+                  method="rpart", 
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", classProbs=TRUE, summaryFunction=mnLogLoss))
+
+#stopCluster(cl)
+cl_tree$results
 ```
+
+    ##            cp   logLoss  logLossSD
+    ## 1 0.003420398 0.5047808 0.01243338
+    ## 2 0.005752488 0.5065624 0.01178659
+    ## 3 0.015339967 0.5378136 0.02177296
+
+Best model has a logloss similar to our previous models, not a bad
+metric for this problem.
 
 ## Random Forest
 
@@ -449,19 +466,19 @@ rf_fit$results
 ```
 
     ##   mtry   logLoss  logLossSD
-    ## 1    1 1.0677515 0.08696481
-    ## 2    2 0.5594444 0.01199705
-    ## 3    3 0.4926564 0.01080357
-    ## 4    4 0.4799974 0.00931388
-    ## 5    5 0.4801806 0.01157539
-    ## 6    6 0.4810861 0.01320434
+    ## 1    1 1.0717577 0.07751055
+    ## 2    2 0.5721876 0.02277009
+    ## 3    3 0.4960849 0.01512442
+    ## 4    4 0.4837937 0.01563503
+    ## 5    5 0.4824160 0.01528050
+    ## 6    6 0.4829262 0.01392387
 
 ``` r
 rf_fit$bestTune
 ```
 
     ##   mtry
-    ## 4    4
+    ## 5    5
 
 We went ahead and printed the results and the `$bestTune` to confirm
 that `caret::train` has selected the best model.
@@ -492,10 +509,10 @@ lda_fit$results
 ```
 
     ##   parameter   logLoss   logLossSD
-    ## 1      none 0.4725004 0.008105985
+    ## 1      none 0.4738016 0.002444557
 
-The logLoss for this model is better than the logistic regression and
-random forest. So we’ll go ahead and select the fit using all variables.
+The logLoss for this model is close to logistic regression and random
+forest models. So we’ll go ahead and select the fit using all variables.
 
 ## Support Vector Machine
 
@@ -516,12 +533,15 @@ linear and non-linear variants, making them versatile for a range of
 problems.
 
 ``` r
-svm <- train(Diabetes_fac ~., data = diabetesTrain, method = "svmLinear", 
-               trControl = trainControl(method = "cv", number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),  
+svm <- train(Diabetes_fac ~., data = diabetesTrain, 
+             method = "svmLinear", 
+             metric = "logLoss",
+            trControl = trainControl(method = "cv", number = 5, 
+                                     classProbs=TRUE, summaryFunction=mnLogLoss),  
                preProcess = c("center","scale"))
 ```
 
-    ## maximum number of iterations reached 0.008660874 0.007692912maximum number of iterations reached 0.006155162 0.005626789maximum number of iterations reached 0.006367217 0.005738635maximum number of iterations reached 0.009026189 0.00798476maximum number of iterations reached 0.007381077 0.006595966maximum number of iterations reached 0.005535912 0.005025062
+    ## maximum number of iterations reached 0.006709993 0.00598527
 
 ``` r
 svm
@@ -535,17 +555,17 @@ svm
     ## 
     ## Pre-processing: centered (40), scaled (40) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5308, 5309, 5309, 5308, 5310 
+    ## Summary of sample sizes: 5309, 5308, 5309, 5310, 5308 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.5369436
+    ##   0.5446483
     ## 
     ## Tuning parameter 'C' was held constant at a value of 1
 
-SVM is a viable model as it has an logloss of .5344. The model does
-better with more complex data making it better with higher dimensional
-data,
+SVM is a viable model as it has an logloss similar to the other models.
+The model does better with more complex data making it better with
+higher dimensional data,
 
 # Final Model Selection
 
@@ -560,7 +580,7 @@ we were saving it for.
 
 ``` r
 library(MLmetrics)
-model_list <- list(logreg_fit1, log_lasso, rf_fit, svm, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, cl_tree, rf_fit, svm, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -569,7 +589,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "lasso", "rf_fit", "svm", "lda")
+  names(results) <- c("logreg", "lasso", "cl_tree", "rf_fit", "svm", "lda")
   return(results)
 }
 
@@ -583,8 +603,8 @@ Now we have the LogLoss score for each of our models stored in
 logloss_results
 ```
 
-    ##      logreg    lasso    rf_fit       svm       lda
-    ## 1 0.4739574 0.473862 0.4777295 0.5453632 0.4759998
+    ##      logreg    lasso  cl_tree    rf_fit       svm       lda
+    ## 1 0.4739574 0.473862 0.498246 0.4771316 0.5434434 0.4759998
 
 The best model
 

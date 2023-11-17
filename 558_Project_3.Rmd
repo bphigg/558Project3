@@ -212,7 +212,7 @@ logreg_fit3$results
 ```
 The best LogLoss value of the three models is `logreg_fit1`. 
 
-##Lasso Regression
+## Lasso Regression
 
 Lasso regression, short for Least Absolute Shrinkage and Selection Operator, is a linear regression technique that includes a penalty term to the ordinary least squares (OLS) objective function. The purpose of this penalty term is to encourage the model to prefer simpler models with fewer predictor variables, effectively driving some of the coefficients to zero.
 
@@ -223,23 +223,46 @@ In classification tasks, logistic regression is a standard choice, while lasso r
 
 ```{r las_reg}
 library(caret)
-diabetesTest
+#diabetesTest
 
 log_lasso <- train(Diabetes_fac ~ . ,data=diabetesTrain,
                   method="glmnet",
                   family="binomial",
+                  metric="logLoss",
                   preProcess = c("center", "scale"),
                    trControl = trainControl(method="cv", number = 5, 
                                               classProbs=TRUE, summaryFunction=mnLogLoss))
 
-
-
 log_lasso$results
-
-
-#alpha of .10 and regularization parameter (lambda) of 0.0230916176 gave us the strongest model
                  
 ```
+
+
+## Classification Tree
+
+A classification tree, also known as a decision tree, is a supervised machine learning algorithm used for both classification and regression tasks. In the context of classification, the algorithm builds a tree-like structure to make predictions about the categorical target variable.
+
+Classification trees are interpretable and easy to understand, making them useful for visualizing decision-making processes. However, they can be prone to overfitting, especially if the tree is allowed to grow too deep and capture noise in the training data. Techniques like pruning (removing branches of the tree) and setting constraints on the tree's growth help mitigate overfitting.
+
+
+```{r clas_reg}
+#library(doParallel)
+#library(parallel)
+
+#cl <- makeCluster(7)
+#registerDoParallel(cl)
+#getDoParWorkers()
+
+cl_tree = train(Diabetes_fac ~ ., 
+                  data=diabetesTrain, 
+                  method="rpart", 
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", classProbs=TRUE, summaryFunction=mnLogLoss))
+
+#stopCluster(cl)
+cl_tree$results
+```
+Best model has a logloss similar to our previous models, not a bad metric for this problem.
 
 
 ## Random Forest
@@ -248,6 +271,7 @@ Random Forest utilizes bootstrap aggregation to calculate the average response o
 
 We'll go ahead and train a random forest fit on 1 to 6 predictors. The nice thing about the `caret::train` function is that it will automatically select the best fit to use when we run our predictions, so we will not need to evaluate mulitple results.
 ```{r random_forest}
+
 rf_fit <- train(Diabetes_fac ~., data = diabetesTrain, method = "rf",
                 metric = "logLoss",
                 preProcess = c("center", "scale"),
@@ -275,7 +299,7 @@ lda_fit <- train(Diabetes_fac ~ ., data = diabetesTrain, method = "lda",
 
 lda_fit$results
 ```
-The logLoss for this model is better than the logistic regression and random forest. So we'll go ahead and select the fit using all variables.
+The logLoss for this model is close to logistic regression and random forest models. So we'll go ahead and select the fit using all variables.
 
 ## Support Vector Machine
 
@@ -287,14 +311,16 @@ SVMs are effective in high-dimensional spaces and are widely used in various app
 
 ```{r svm}
 
-
-svm <- train(Diabetes_fac ~., data = diabetesTrain, method = "svmLinear", 
-               trControl = trainControl(method = "cv", number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),  
+svm <- train(Diabetes_fac ~., data = diabetesTrain, 
+             method = "svmLinear", 
+             metric = "logLoss",
+            trControl = trainControl(method = "cv", number = 5, 
+                                     classProbs=TRUE, summaryFunction=mnLogLoss),  
                preProcess = c("center","scale"))
 
 svm
 ```
-SVM is a viable model as it has an logloss of .5344. The model does better with more complex data making it better with higher dimensional data,
+SVM is a viable model as it has an logloss similar to the other models. The model does better with more complex data making it better with higher dimensional data,
 
 
 # Final Model Selection
@@ -302,7 +328,7 @@ SVM is a viable model as it has an logloss of .5344. The model does better with 
 Now that we have our six trained models, we'll test them on the test data and select the model with the lowest logLoss as the winner. To do this, we'll write a function that will take in a list of the model names and run them through a `for loop`  that will run `predict()` and calculate `LogLoss()` on each with the results appended to a list. Note the `test_logloss` argument that we pulled from our test data before we deleted the `Diabetes_binary` columns. This `LogLoss()` function is what we were saving it for.
 ```{r model_selection}
 library(MLmetrics)
-model_list <- list(logreg_fit1, log_lasso, rf_fit, svm, lda_fit)
+model_list <- list(logreg_fit1, log_lasso, cl_tree, rf_fit, svm, lda_fit)
 
 best_model <- function(x){
   results <- list()
@@ -311,7 +337,7 @@ best_model <- function(x){
     l_loss <- LogLoss(pred$positive, test_logloss)
     results[i] <- l_loss
   }
-  names(results) <- c("logreg", "lasso", "rf_fit", "svm", "lda")
+  names(results) <- c("logreg", "lasso", "cl_tree", "rf_fit", "svm", "lda")
   return(results)
 }
 
